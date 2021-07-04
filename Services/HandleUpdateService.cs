@@ -38,6 +38,18 @@ public class HandleUpdateService
         }
 
 
+        public async Task<Message> SendMessageToChatId( long chatId,string message)
+        {
+            await _botClient.SendChatActionAsync(chatId, ChatAction.UploadPhoto);
+
+        return await _botClient.SendTextMessageAsync(chatId: chatId,
+                                                            text: message);
+
+           
+        }
+
+
+
         public async Task EchoAsync(Update update)
         {
             var handler = update.Type switch

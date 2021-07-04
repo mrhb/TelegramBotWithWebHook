@@ -1,20 +1,23 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot.Examples.WebHook.Services;
+using TelegramBot.DbAccess;
 
 namespace Telegram.Bot.Examples.WebHook
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration,IWebHostEnvironment env)
         {
+            Environment = env;
             Configuration = configuration;
             _botConfig = Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
         }
-
+        public IWebHostEnvironment Environment { get; }
         public IConfiguration Configuration { get; }
         private BotConfiguration _botConfig { get; }
 
@@ -43,6 +46,19 @@ namespace Telegram.Bot.Examples.WebHook
             //   https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/formatting?view=aspnetcore-5.0#add-newtonsoftjson-based-json-format-support
             services.AddControllers()
                     .AddNewtonsoftJson();
+            services.AddDbContext<TelegramBotContext>(options =>
+            {
+                var connectionString = Configuration.GetConnectionString("TelegramBotContext");
+
+                if (Environment.IsDevelopment())
+                {
+                    options.UseSqlite(connectionString);
+                }
+                else
+                {
+                    options.UseSqlServer(connectionString);
+                }
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -68,9 +84,9 @@ namespace Telegram.Bot.Examples.WebHook
                                              pattern: $"api/update/bot/{token}",
                                              new { controller = "Webhook", action = "Post" });
 
-                endpoints.MapControllerRoute(name: "cmd",
-                                             pattern: $"api/update/bott",
-                                             new { controller = "cmd", action = "Get" });
+                endpoints.MapControllerRoute(name: "Webhook",
+                                             pattern: $"servicebot",
+                                             new { controller = "Webhook", action = "Get" });
                 endpoints.MapControllers();
 
  
