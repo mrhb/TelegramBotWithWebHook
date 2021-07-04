@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Telegram.Bot.Examples.WebHook.Services;
 using Telegram.Bot.Types;
 using TelegramBot.DbAccess;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using TelegramBot.Services;
 
 namespace Telegram.Bot.Examples.WebHook.Controllers
 {

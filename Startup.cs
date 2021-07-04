@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot.Examples.WebHook.Services;
 using TelegramBot.DbAccess;
+using TelegramBot.Services;
 
 namespace Telegram.Bot.Examples.WebHook
 {
