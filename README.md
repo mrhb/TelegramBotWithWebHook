@@ -10,7 +10,9 @@ You can find useful information on setting up webhook for your bot in official d
 - [Marvin's Marvellous Guide to All Things Webhook](https://core.telegram.org/bots/webhooks)
 - [Getting updates](https://core.telegram.org/bots/api#getting-updates)
 - [setWebhook](https://core.telegram.org/bots/api#setwebhook)
-- [getWebhookInfo](https://core.telegram.org/bots/api#getwebhookinfo)
+- [getWebhookInfo](https://core.telegram.org/bots/api#getwebhookinfo).
+
+feel free to contact me : mmmhajar83@gmail.com
 
 ## Setup
 
@@ -28,6 +30,9 @@ You have to specify your Bot token in **appsettings.json**. Replace **{BotToken}
 ```
 
 you can specify separate development configuration with **appsettings.Development.json**.
+
+## SpeedVPN
+inorder to tackle telegram filtering  we use speedVPN 
 
 ## Ngrok
 
