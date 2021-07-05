@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Telegram.Bot.Examples.WebHook.Migrations
+namespace KosarRB_TelegramBot.Migrations
 {
     public partial class InitialCreate : Migration
     {

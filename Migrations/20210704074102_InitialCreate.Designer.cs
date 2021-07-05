@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TelegramBot.DbAccess;
 
-namespace Telegram.Bot.Examples.WebHook.Migrations
+namespace KosarRB_TelegramBot.Migrations
 {
     [DbContext(typeof(TelegramBotContext))]
     [Migration("20210704074102_InitialCreate")]

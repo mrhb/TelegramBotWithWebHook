@@ -5,8 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot;
 
-namespace Telegram.Bot.Examples.WebHook.Services
+namespace KosarRB_TelegramBot.Services
 {
     public class ConfigureWebhook : IHostedService
     {
@@ -26,7 +27,7 @@ namespace Telegram.Bot.Examples.WebHook.Services
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             using var scope = _services.CreateScope();
-            var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+            var botClient = scope.ServiceProvider.GetRequiredService<Telegram.Bot.ITelegramBotClient>();
 
             // Configure custom endpoint per Telegram API recommendations:
             // https://core.telegram.org/bots/api#setwebhook

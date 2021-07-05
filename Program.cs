@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TelegramBot.Models;
 
-namespace Telegram.Bot.Examples.WebHook
+namespace KosarRB_TelegramBot
 {
     public  class Program
     {

@@ -5,7 +5,7 @@ using TelegramBot.DbAccess;
 using System.Linq;
 using TelegramBot.Services;
 
-namespace Telegram.Bot.Examples.WebHook.Controllers
+namespace KosarRB_TelegramBot.Controllers
 {
     public class WebhookController : ControllerBase
     {

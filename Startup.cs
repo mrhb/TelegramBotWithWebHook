@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Telegram.Bot.Examples.WebHook.Services;
+using KosarRB_TelegramBot.Services;
 using TelegramBot.DbAccess;
 using TelegramBot.Services;
+using Telegram.Bot;
 
-namespace Telegram.Bot.Examples.WebHook
+namespace KosarRB_TelegramBot
 {
     public class Startup
     {
