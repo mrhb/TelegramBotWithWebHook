@@ -1,7 +1,7 @@
 
 # ASP.NET Core Webhook Example
 
-## About
+##  📦 About
 
 This project is a simple ASP.NET Core application, which provides webhook endpoint for the Telegram Bot.
 
@@ -14,7 +14,7 @@ You can find useful information on setting up webhook for your bot in official d
 
 feel free to contact me : mmmhajar83@gmail.com
 
-## Setup
+## 🔨 Setup
 
 This is a short description how you can test your bot locally. The description presumes that you already have a bot and it’s token. If not, please create one. You’ll find several explanations on the internet how to do this.
 
