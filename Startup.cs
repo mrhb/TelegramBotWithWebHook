@@ -39,7 +39,11 @@ namespace Telegram.Bot.Examples.WebHook
                         => new TelegramBotClient(_botConfig.BotToken, httpClient));
 
             // Dummy business-logic service
+            
+            services.AddHostedService<MessageScheduleService>();
+
             services.AddScoped<HandleUpdateService>();
+
 
             // The Telegram.Bot library heavily depends on Newtonsoft.Json library to deserialize
             // incoming webhook updates and send serialized responses back.
