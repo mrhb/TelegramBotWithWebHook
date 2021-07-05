@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ public class MessageScheduleService
        : BackgroundService
 {       
     private readonly IServiceScopeFactory scopeFactory;
+    private Timer _timer;
 
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<MessageScheduleService> _logger;
@@ -29,32 +31,8 @@ public class MessageScheduleService
         }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        
-        string title="";
-        while (!stoppingToken.IsCancellationRequested)
-        {
-             using (var scope = scopeFactory.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
-
-                           title= dbContext.Chat.OrderBy(c=>c.Id).Last().Title;
-
-                
-            }
-            // This eShopOnContainers method is quering a database table 
-            // and publishing events into the Event Bus (RabbitMS / ServiceBus)
-
-            try
-            {
-            await SendMessageToChatId( 851145561,"this is title:"+ title);
-            }
-            catch (System.Exception)
-            {
-                //                throw;
-            }
-            await Task.Delay(1000, stoppingToken);
-        }
-        
+         _timer = new Timer(DoWork, null, TimeSpan.Zero, 
+            TimeSpan.FromSeconds(1));        
     }
 
     public  override async Task StopAsync (CancellationToken stoppingToken)
@@ -62,10 +40,32 @@ public class MessageScheduleService
             // Run your graceful clean-up actions
     }
 
+    private void DoWork(object? state)
+    {
+        string title="";
 
+        using (var scope = scopeFactory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
+                title= dbContext.Chat.OrderBy(c=>c.Id).Last().Title;
+            }
+            // This eShopOnContainers method is quering a database table 
+            // and publishing events into the Event Bus (RabbitMS / ServiceBus)
+            try
+            {
+             SendMessageToChatId( 851145561,"this is title:"+ title);
+            }
+            catch (System.Exception)
+            {
+                //                throw;
+            }
+      
+        _logger.LogInformation("Timed Hosted Service is working. Count: {Count}", 234);
+        return ;
+            }
     public  override async Task StartAsync(CancellationToken cancellationToken)
     {
-           await ExecuteAsync(cancellationToken);
+          await ExecuteAsync(cancellationToken);
     }
 
 
