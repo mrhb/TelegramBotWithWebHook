@@ -32,14 +32,12 @@ public class MessageScheduleService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
          _timer = new Timer(DoWork, null, TimeSpan.Zero, 
-            TimeSpan.FromSeconds(1));        
+            TimeSpan.FromSeconds(5));        
     }
-
     public  override async Task StopAsync (CancellationToken stoppingToken)
     {
             // Run your graceful clean-up actions
     }
-
     private void DoWork(object? state)
     {
         string title="";
@@ -53,22 +51,19 @@ public class MessageScheduleService
             // and publishing events into the Event Bus (RabbitMS / ServiceBus)
             try
             {
-             SendMessageToChatId( 851145561,"this is title:"+ title);
+            //  SendMessageToChatId( 851145561,"this is title:"+ title);
+             SendMessageToChatId(  -1001523404462,"this is title:"+ title);
             }
             catch (System.Exception)
             {
                 //                throw;
             }
-      
-        _logger.LogInformation("Timed Hosted Service is working. Count: {Count}", 234);
         return ;
             }
     public  override async Task StartAsync(CancellationToken cancellationToken)
     {
           await ExecuteAsync(cancellationToken);
     }
-
-
     public async Task<Message> SendMessageToChatId( long chatId,string message)
     {
         return await _botClient.SendTextMessageAsync(chatId: chatId,text: message);

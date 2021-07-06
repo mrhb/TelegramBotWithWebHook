@@ -53,6 +53,11 @@ public class HandleUpdateService
 
         public async Task EchoAsync(Update update)
         {
+            
+
+        _logger.LogInformation("update.Message.ToString()");
+
+           
             var handler = update.Type switch
             {
                 // UpdateType.Unknown:
