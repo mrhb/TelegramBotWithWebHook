@@ -15,31 +15,24 @@ namespace TelegramBot.Models
                     DbContextOptions<TelegramBotContext>>()))
             {
                 // Look for any chats.
-                if (context.Chat.Any())
+                if (context.ContactInfo.Any())
                 {
                     return;   // DB has been seeded
                 }
 
-                context.Chat.AddRange(
-                    new Chat
+                context.ContactInfo.AddRange(
+                    new ContactInfo
                     {
                         ChatId=851145561,
-                        Title = "When Harry Met Sally",
-                        
+                        ChatType=ChatType.person,
+                        Title="hajjr"
                     },
-
-                    new Chat
+                     new ContactInfo
                     {
-                        ChatId=851145561,
-                        Title = "Ghostbusters ",
-                    },
-
-                    new Chat
-                    {
-                        ChatId=851145561,
-                        Title = "Ghostbusters 2",
+                        ChatId=-1001523404462,
+                        ChatType=ChatType.group,
+                        Title="kosarRB Group"
                     }
-
                 );
                 context.SaveChanges();
             }

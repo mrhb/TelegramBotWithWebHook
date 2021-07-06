@@ -14,7 +14,7 @@ namespace KosarRB_TelegramBot.Controllers
         public WebhookController(TelegramBotContext context)
         {
             _context = context;
-           _title= _context.Chat.First(m => m.Id == 1).Title;
+           _title= _context.ContactInfo.First(m => m.Id == 1).fldSSN;
         }
 
         [HttpPost]

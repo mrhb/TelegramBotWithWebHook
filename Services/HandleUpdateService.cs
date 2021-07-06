@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using TelegramBot.DbAccess;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,21 +11,22 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TelegramBot.Services
 {
-public class HandleUpdateService
-{
+    public class HandleUpdateService
+    {
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<HandleUpdateService> _logger;
+        private readonly IServiceScopeFactory scopeFactory;
 
-        public HandleUpdateService(ITelegramBotClient botClient, ILogger<HandleUpdateService> logger)
+        public HandleUpdateService(ITelegramBotClient botClient, ILogger<HandleUpdateService> logger,IServiceScopeFactory scopeFactory)
         {
-            _botClient = botClient;
-            _logger = logger;
+            this.scopeFactory = scopeFactory;
+            this._botClient = botClient;
+            this._logger = logger;
         }
-
-
         public async Task<Message> SendFileToChatId( long chatId)
         {
             await _botClient.SendChatActionAsync(chatId, ChatAction.UploadPhoto);
@@ -37,27 +38,15 @@ public class HandleUpdateService
                                             photo: new InputOnlineFile(fileStream, fileName),
                                             caption: "Nice Picture");
         }
-
-
         public async Task<Message> SendMessageToChatId( long chatId,string message)
         {
             await _botClient.SendChatActionAsync(chatId, ChatAction.UploadPhoto);
 
-        return await _botClient.SendTextMessageAsync(chatId: chatId,
-                                                            text: message);
-
-           
+        return await _botClient.SendTextMessageAsync(chatId: chatId,text: message);
         }
-
-
-
         public async Task EchoAsync(Update update)
         {
-            
-
-        _logger.LogInformation("update.Message.ToString()");
-
-           
+            _logger.LogInformation("update.Message.ToString()");
             var handler = update.Type switch
             {
                 // UpdateType.Unknown:
@@ -83,13 +72,48 @@ public class HandleUpdateService
                 await HandleErrorAsync(exception);
             }
         }
+          // بروز رسانی  اطلاعات کاربر یا گروه 
+        private  Task<int> SaveGroupChatId(ITelegramBotClient bot, Message message)
+        {
+            int result =-1;
+            using (var scope = scopeFactory.CreateScope())
+                { 
+                    TelegramBot.Models.ContactInfo contactInfo ;
+                    var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
+                    switch (message.Type)
+                    {
+                        case MessageType.ChatMemberLeft:
+                        contactInfo= (TelegramBot.Models.ContactInfo)dbContext.ContactInfo.Where(b => b.ChatId == message.Chat.Id).FirstOrDefault();
+                          var removed=dbContext.ContactInfo.Remove(contactInfo);
+                          result =2;
+                        break;
+                        case MessageType.ChatMembersAdded:
+                        contactInfo=new Models.ContactInfo(){
+                            ChatId  =message.Chat.Id,
+                            Title=message.Chat.Title
+                        };
+                        dbContext.ContactInfo.Add(contactInfo);
+                    
+                            result =2;
+                        break;
+                        default:
+                        break;   
+                    }
+                    dbContext.SaveChanges();
+                }
+
+            return  Task.FromResult(result);
+        }
 
         private async Task BotOnMessageReceived(Message message)
         {
             _logger.LogInformation($"Receive message type: {message.Type}");
             if (message.Type != MessageType.Text)
+            {
+                var SaveMessage =  SaveGroupChatId(_botClient, message);;
+                _logger.LogInformation($"The group was saved with id: {SaveMessage.Result}");
                 return;
-
+            }
             var action = message.Text.Split(' ').First() switch
             {
                 "/inline"   => SendInlineKeyboard(_botClient, message),
@@ -101,8 +125,7 @@ public class HandleUpdateService
             };
             var sentMessage = await action;
             _logger.LogInformation($"The message was sent with id: {sentMessage.MessageId}");
-
-
+          
             // Send inline keyboard
             // You can process responses in BotOnCallbackQueryReceived handler
             static async Task<Message> SendInlineKeyboard(ITelegramBotClient bot, Message message)
@@ -192,7 +215,6 @@ public class HandleUpdateService
                                                       replyMarkup: new ReplyKeyboardRemove());
             }
         }
-
         // Process Inline Keyboard callback data
         private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
         {
@@ -202,44 +224,36 @@ public class HandleUpdateService
             await _botClient.SendTextMessageAsync(callbackQuery.Message.Chat.Id,
                                                   $"Received {callbackQuery.Data}");
         }
-
         #region Inline Mode
-
-        private async Task BotOnInlineQueryReceived(InlineQuery inlineQuery)
-        {
-           _logger.LogInformation($"Received inline query from: {inlineQuery.From.Id}");
-
-            InlineQueryResultBase[] results = {
-                // displayed result
-                new InlineQueryResultArticle(
-                    id: "3",
-                    title: "TgBots",
-                    inputMessageContent: new InputTextMessageContent(
-                        "hello"
+            private async Task BotOnInlineQueryReceived(InlineQuery inlineQuery)
+            {
+                _logger.LogInformation($"Received inline query from: {inlineQuery.From.Id}");
+                InlineQueryResultBase[] results = {
+                    // displayed result
+                    new InlineQueryResultArticle(
+                        id: "3",
+                        title: "MRHB:",
+                        inputMessageContent: new InputTextMessageContent(
+                            "hello, I'm here to help you to find funnies"
+                        )
                     )
-                )
-            };
-
-            await _botClient.AnswerInlineQueryAsync(inlineQueryId: inlineQuery.Id,
-                                                    results: results,
-                                                    isPersonal: true,
-                                                    cacheTime: 0);
-        }
-
-        private Task BotOnChosenInlineResultReceived(ChosenInlineResult chosenInlineResult)
-        {
-            _logger.LogInformation($"Received inline result: {chosenInlineResult.ResultId}");
-            return Task.CompletedTask;
-        }
-
+                };
+                await _botClient.AnswerInlineQueryAsync(inlineQueryId: inlineQuery.Id,
+                                                        results: results,
+                                                        isPersonal: true,
+                                                        cacheTime: 0);
+            }
+            private Task BotOnChosenInlineResultReceived(ChosenInlineResult chosenInlineResult)
+            {
+                _logger.LogInformation($"Received inline result: {chosenInlineResult.ResultId}");
+                return Task.CompletedTask;
+            }
         #endregion
-
         private Task UnknownUpdateHandlerAsync(Update update)
         {
             _logger.LogInformation($"Unknown update type: {update.Type}");
             return Task.CompletedTask;
         }
-
         public Task HandleErrorAsync(Exception exception)
         {
             var ErrorMessage = exception switch
@@ -251,6 +265,5 @@ public class HandleUpdateService
             _logger.LogInformation(ErrorMessage);
             return Task.CompletedTask;
         }
-
     }
 }

@@ -40,23 +40,26 @@ public class MessageScheduleService
     }
     private void DoWork(object? state)
     {
-        string title="";
 
         using (var scope = scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
-                title= dbContext.Chat.OrderBy(c=>c.Id).Last().Title;
-            }
+               var  contactList= dbContext.ContactInfo.ToList();
             // This eShopOnContainers method is quering a database table 
             // and publishing events into the Event Bus (RabbitMS / ServiceBus)
             try
             {
             //  SendMessageToChatId( 851145561,"this is title:"+ title);
-             SendMessageToChatId(  -1001523404462,"this is title:"+ title);
+            foreach (var item in contactList)
+            {
+             SendMessageToChatId( item.ChatId,"you subscribed:"+ item.Title);
+                
+            }
             }
             catch (System.Exception)
             {
                 //                throw;
+            }
             }
         return ;
             }
