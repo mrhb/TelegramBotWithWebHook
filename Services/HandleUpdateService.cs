@@ -104,7 +104,38 @@ namespace TelegramBot.Services
 
             return  Task.FromResult(result);
         }
+        private async Task<Message>  Unsubscribe(ITelegramBotClient bot, Message message)
+        {
+        using (var scope = scopeFactory.CreateScope())
+            { 
+                TelegramBot.Models.ContactInfo contactInfo ;
+                var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
+                contactInfo= (TelegramBot.Models.ContactInfo)dbContext.ContactInfo.Where(b => b.ChatId == message.Chat.Id).FirstOrDefault();
+                dbContext.ContactInfo.Remove(contactInfo);
+                
+                dbContext.SaveChanges();
+            }
+            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: " از اشتراک خبرنامه حذف شدید!");
+        }
+        private async Task<Message>  Subscribe(ITelegramBotClient bot, Message message)
+        {
+            using (var scope = scopeFactory.CreateScope())
+            { 
+                TelegramBot.Models.ContactInfo contactInfo ;
+                var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
+                contactInfo=new Models.ContactInfo(){
+                    ChatId  =message.Chat.Id,
+                    Title=message.Chat.Title
+                };
+                dbContext.ContactInfo.Add(contactInfo);
+                dbContext.SaveChanges();
+            }
 
+                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: "اشتراک شما با موفقیت انجام شد.");
+        }
+           
         private async Task BotOnMessageReceived(Message message)
         {
             _logger.LogInformation($"Receive message type: {message.Type}");
@@ -116,6 +147,8 @@ namespace TelegramBot.Services
             }
             var action = message.Text.Split(' ').First() switch
             {
+                "/unsubscribe"   => Unsubscribe(_botClient, message),
+                "/subscribe"   => Subscribe(_botClient, message),
                 "/inline"   => SendInlineKeyboard(_botClient, message),
                 "/keyboard" => SendReplyKeyboard(_botClient, message),
                 "/remove"   => RemoveKeyboard(_botClient, message),
@@ -125,6 +158,7 @@ namespace TelegramBot.Services
             };
             var sentMessage = await action;
             _logger.LogInformation($"The message was sent with id: {sentMessage.MessageId}");
+          
           
             // Send inline keyboard
             // You can process responses in BotOnCallbackQueryReceived handler
@@ -205,6 +239,9 @@ namespace TelegramBot.Services
             static async Task<Message> Usage(ITelegramBotClient bot, Message message)
             {
                 const string usage = "Usage:\n" +
+
+                                     "/subscribe   - ثبت نام در خبرنامه\n" +
+                                     "/unsubscribe   - انصراف از خبرنامه\n" +
                                      "/inline   - send inline keyboard\n" +
                                      "/keyboard - send custom keyboard\n" +
                                      "/remove   - remove custom keyboard\n" +
@@ -215,6 +252,8 @@ namespace TelegramBot.Services
                                                       replyMarkup: new ReplyKeyboardRemove());
             }
         }
+
+
         // Process Inline Keyboard callback data
         private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
         {
