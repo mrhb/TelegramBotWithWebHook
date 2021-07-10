@@ -6,7 +6,6 @@ namespace TelegramBot.Models
     public class ContactInfo
     {
         [Key]
-        public int fldId { get; set; }
         public long  fldChatId { get; set; }
         public ChatType fldChatType { get; set; }
         public ChatState fldChatState { get; set; }
@@ -25,7 +24,7 @@ namespace TelegramBot.Models
     public enum ChatState : int
     {
         start=0, //new chat Id recieved
-        subscribe= 1, // subscribe request clicked
+        subscribing= 1, // subscribe request clicked
         getMobileNumber=2,// send mobileNumber request
         subscribed=3,// subscribed
         unsubscribe=20

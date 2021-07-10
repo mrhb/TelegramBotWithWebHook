@@ -79,7 +79,7 @@ namespace TelegramBot.Services
                 await HandleErrorAsync(exception);
             }
         }
-          // بروز رسانی  اطلاعات کاربر یا گروه 
+          // بروز رسانی  اطلاعات  گروه 
         private  Task<int> SaveGroupChatId(ITelegramBotClient bot, Message message)
         {
             int result =-1;
@@ -97,7 +97,9 @@ namespace TelegramBot.Services
                         case MessageType.ChatMembersAdded:
                         contactInfo=new Models.ContactInfo(){
                             fldChatId  =message.Chat.Id,
-                            // Title=message.Chat.Title
+                            fldMobileNumberOrId=message.Chat.Title,
+                            fldChatType=Models.ChatType.group,
+                            fldChatState=Models.ChatState.subscribed
                         };
                         dbContext.tblContactInfo.Add(contactInfo);
                     
@@ -133,15 +135,17 @@ namespace TelegramBot.Services
                 var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
                 contactInfo=new Models.ContactInfo(){
                     fldChatId  =message.Chat.Id,
-                    // Title=message.Chat.Title,
-                    fldChatType=TelegramBot.Models.ChatType.person
+                    fldChatState=Models.ChatState.subscribing,
+                    fldChatType=TelegramBot.Models.ChatType.person,
+                    fldMobileNumberOrId=""
                 };
                 dbContext.tblContactInfo.Add(contactInfo);
-                dbContext.SaveChanges();
+                var result=dbContext.SaveChanges();
             }
 
                 return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                    text: "اشتراک شما با موفقیت انجام شد.");
+                                                    text: "جهت ثبت اشتراک، لطفا شماره موبایل خود را وارد نمایید:");
+
         }
            
         private async Task BotOnMessageReceived(Message message)
@@ -168,100 +172,117 @@ namespace TelegramBot.Services
             };
             var sentMessage = await action;
             _logger.LogInformation($"The message was sent with id: {sentMessage.MessageId}");
-            
-            // Send inline keyboard
-            // You can process responses in BotOnCallbackQueryReceived handler
-            static async Task<Message> SendInlineKeyboard(ITelegramBotClient bot, Message message)
+        }
+        // Send inline keyboard
+        // You can process responses in BotOnCallbackQueryReceived handler
+        static async Task<Message> SendInlineKeyboard(ITelegramBotClient bot, Message message)
+        {
+            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
+
+            // Simulate longer running task
+            await Task.Delay(500);
+
+            InlineKeyboardMarkup inlineKeyboard = new(new[]
             {
-                await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-
-                // Simulate longer running task
-                await Task.Delay(500);
-
-                InlineKeyboardMarkup inlineKeyboard = new(new[]
+                // first row
+                new []
                 {
-                    // first row
-                    new []
-                    {
-                        InlineKeyboardButton.WithCallbackData("ارسال آخرین پیام", "11"),
-                        InlineKeyboardButton.WithCallbackData("1.2", "12"),
-                    },
-                    // second row
-                    new []
-                    {
-                        InlineKeyboardButton.WithCallbackData("2.1", "21"),
-                        InlineKeyboardButton.WithCallbackData("2.2", "22"),
-                    },
-                });
-                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                      text: "یکی از موارد زیر را انتخاب کنید",
-                                                      replyMarkup: inlineKeyboard);
-            }
-
-            static async Task<Message> SendReplyKeyboard(ITelegramBotClient bot, Message message)
-            {
-                ReplyKeyboardMarkup replyKeyboardMarkup = new(
-                    new KeyboardButton[][]
-                    {
-                        new KeyboardButton[] { "1.1", "1.2" },
-                        new KeyboardButton[] { "2.1", "2.2" },
-                    },
-                    resizeKeyboard: true
-                );
-
-                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                      text: "Choose",
-                                                      replyMarkup: replyKeyboardMarkup);
-            }
-
-            static async Task<Message> RemoveKeyboard(ITelegramBotClient bot, Message message)
-            {
-                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                      text: "Removing keyboard",
-                                                      replyMarkup: new ReplyKeyboardRemove());
-            }
-
-            static async Task<Message> SendFile(ITelegramBotClient bot, Message message)
-            {
-                await bot.SendChatActionAsync(message.Chat.Id, ChatAction.UploadPhoto);
-
-                const string filePath = @"Files/tux.png";
-                using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                var fileName = filePath.Split(Path.DirectorySeparatorChar).Last();
-                return await bot.SendPhotoAsync(chatId: message.Chat.Id,
-                                                photo: new InputOnlineFile(fileStream, fileName),
-                                                caption: "Nice Picture");
-            }
-
-            static async Task<Message> RequestContactAndLocation(ITelegramBotClient bot, Message message)
-            {
-                ReplyKeyboardMarkup RequestReplyKeyboard = new(new[]
+                    InlineKeyboardButton.WithCallbackData("ارسال آخرین پیام", "11"),
+                    InlineKeyboardButton.WithCallbackData("1.2", "12"),
+                },
+                // second row
+                new []
                 {
-                    KeyboardButton.WithRequestLocation("Location"),
-                    KeyboardButton.WithRequestContact("Contact"),
-                });
-                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                      text: "Who or Where are you?",
-                                                      replyMarkup: RequestReplyKeyboard);
-            }
+                    InlineKeyboardButton.WithCallbackData("2.1", "21"),
+                    InlineKeyboardButton.WithCallbackData("2.2", "22"),
+                },
+            });
+            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: "یکی از موارد زیر را انتخاب کنید",
+                                                    replyMarkup: inlineKeyboard);
+        }
 
-            static async Task<Message> Usage(ITelegramBotClient bot, Message message)
+        static async Task<Message> SendReplyKeyboard(ITelegramBotClient bot, Message message)
+        {
+            ReplyKeyboardMarkup replyKeyboardMarkup = new(
+                new KeyboardButton[][]
+                {
+                    new KeyboardButton[] { "1.1", "1.2" },
+                    new KeyboardButton[] { "2.1", "2.2" },
+                },
+                resizeKeyboard: true
+            );
+
+            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: "Choose",
+                                                    replyMarkup: replyKeyboardMarkup);
+        }
+
+        static async Task<Message> RemoveKeyboard(ITelegramBotClient bot, Message message)
+        {
+            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: "Removing keyboard",
+                                                    replyMarkup: new ReplyKeyboardRemove());
+        }
+
+        static async Task<Message> SendFile(ITelegramBotClient bot, Message message)
+        {
+            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.UploadPhoto);
+
+            const string filePath = @"Files/tux.png";
+            using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var fileName = filePath.Split(Path.DirectorySeparatorChar).Last();
+            return await bot.SendPhotoAsync(chatId: message.Chat.Id,
+                                            photo: new InputOnlineFile(fileStream, fileName),
+                                            caption: "Nice Picture");
+        }
+
+        static async Task<Message> RequestContactAndLocation(ITelegramBotClient bot, Message message)
+        {
+            ReplyKeyboardMarkup RequestReplyKeyboard = new(new[]
+            {
+                KeyboardButton.WithRequestLocation("Location"),
+                KeyboardButton.WithRequestContact("Contact"),
+            });
+            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: "Who or Where are you?",
+                                                    replyMarkup: RequestReplyKeyboard);
+        }
+
+        private async Task<Message> Usage(ITelegramBotClient bot, Message message)
             {
                 const string usage = "Usage:\n" +
 
-                                     "/subscribe   - ثبت نام در خبرنامه\n" +
-                                     "/unsubscribe   - انصراف از خبرنامه\n" +
-                                     "/inline   - send inline keyboard\n" +
-                                     "/keyboard - send custom keyboard\n" +
-                                     "/remove   - remove custom keyboard\n" +
-                                     "/photo    - send a photo\n" +
-                                     "/request  - request location or contact";
-                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                      text: usage,
-                                                      replyMarkup: new ReplyKeyboardRemove());
-            }
-        }
+                                    "/subscribe   - ثبت نام در خبرنامه\n" +
+                                    "/unsubscribe   - انصراف از خبرنامه\n" +
+                                    "/inline   - send inline keyboard\n" +
+                                    "/keyboard - send custom keyboard\n" +
+                                    "/remove   - remove custom keyboard\n" +
+                                    "/photo    - send a photo\n" +
+                                    "/request  - request location or contact";
 
+                using (var scope = scopeFactory.CreateScope())
+                    { 
+                        var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
+                        var contactInfo=dbContext.tblContactInfo.Where(inf =>inf.fldChatId ==message.Chat.Id).FirstOrDefault();
+
+                        if (contactInfo != null && contactInfo.fldChatState==Models.ChatState.subscribing)
+                        {
+                            contactInfo.fldChatState=Models.ChatState.subscribed;
+                            contactInfo.fldMobileNumberOrId=message.Text;
+                            dbContext.SaveChanges();
+                            
+                            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                            text: "اشتراک شما با شماره '" +message.Text + "' با موفقیت ثبت شد.");
+                        } 
+                    }
+
+
+                return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                                                    text: usage,
+                                                    replyMarkup: new ReplyKeyboardRemove());
+            }
+                
 
         // Process Inline Keyboard callback data
         private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)

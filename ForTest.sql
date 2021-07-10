@@ -9,13 +9,13 @@ INSERT INTO tblBotMessage
             ,fldTime
         )
      VALUES
-           ("@kosarRB"
+           ("KosarRB"
            ,"salam ...."
            ,""
            ,0
            ,"1400/4/19"
            ,"11:50")
-           , ("@kosarRB"
+           , ("09151575793"
            ,"By  ...."
            ,""
            ,0

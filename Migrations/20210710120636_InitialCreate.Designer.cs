@@ -9,7 +9,7 @@ using TelegramBot.DbAccess;
 namespace KosarRB_Bot.Migrations
 {
     [DbContext(typeof(TelegramBotContext))]
-    [Migration("20210710083416_InitialCreate")]
+    [Migration("20210710120636_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,11 +60,8 @@ namespace KosarRB_Bot.Migrations
 
             modelBuilder.Entity("TelegramBot.Models.ContactInfo", b =>
                 {
-                    b.Property<int>("fldId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
                     b.Property<long>("fldChatId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("fldChatState")
@@ -77,7 +74,7 @@ namespace KosarRB_Bot.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(50)");
 
-                    b.HasKey("fldId");
+                    b.HasKey("fldChatId");
 
                     b.ToTable("tblContactInfo");
                 });

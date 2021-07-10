@@ -31,16 +31,15 @@ namespace KosarRB_Bot.Migrations
                 name: "tblContactInfo",
                 columns: table => new
                 {
-                    fldId = table.Column<int>(type: "INTEGER", nullable: false)
+                    fldChatId = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fldChatId = table.Column<long>(type: "INTEGER", nullable: false),
                     fldChatType = table.Column<int>(type: "INTEGER", nullable: false),
                     fldChatState = table.Column<int>(type: "INTEGER", nullable: false),
                     fldMobileNumberOrId = table.Column<string>(type: "varchar(50)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tblContactInfo", x => x.fldId);
+                    table.PrimaryKey("PK_tblContactInfo", x => x.fldChatId);
                 });
         }
 

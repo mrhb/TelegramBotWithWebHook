@@ -61,7 +61,7 @@ public class MessageScheduleService
                        inf =>inf.fldMobileNumberOrId,
                        (Mes , inf)=>new {
                            mesId =Mes.fldid,
-                           infoId=inf.fldId,
+                           infoChatId=inf.fldChatId,
                            mes = Mes.fldMes,
                            ChatId=inf.fldChatId
                            }
