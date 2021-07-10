@@ -10,6 +10,7 @@ namespace TelegramBot.DbAccess
         {
         }
 
-        public DbSet<ContactInfo> ContactInfo { get; set; }
+        public DbSet<ContactInfo> tblContactInfo { get; set; }
+        public DbSet<BotMessage> tblBotMessage { get; set; }
     }
 }

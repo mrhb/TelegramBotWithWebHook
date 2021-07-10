@@ -21,7 +21,13 @@ namespace TelegramBot.Services
         private readonly ILogger<HandleUpdateService> _logger;
         private readonly IServiceScopeFactory scopeFactory;
 
-        public HandleUpdateService(ITelegramBotClient botClient, ILogger<HandleUpdateService> logger,IServiceScopeFactory scopeFactory)
+        private string cacheKey_state_chatId ;
+
+
+        public HandleUpdateService(
+            ITelegramBotClient botClient,
+            ILogger<HandleUpdateService> logger,
+            IServiceScopeFactory scopeFactory)
         {
             this.scopeFactory = scopeFactory;
             this._botClient = botClient;
@@ -47,6 +53,7 @@ namespace TelegramBot.Services
         public async Task EchoAsync(Update update)
         {
             _logger.LogInformation("update.Message.ToString()");
+
             var handler = update.Type switch
             {
                 // UpdateType.Unknown:
@@ -78,21 +85,21 @@ namespace TelegramBot.Services
             int result =-1;
             using (var scope = scopeFactory.CreateScope())
                 { 
-                    TelegramBot.Models.ContactInfo contactInfo ;
+                    TelegramBot.Models.ContactInfo? contactInfo ;
                     var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
                     switch (message.Type)
                     {
                         case MessageType.ChatMemberLeft:
-                        contactInfo= (TelegramBot.Models.ContactInfo)dbContext.ContactInfo.Where(b => b.ChatId == message.Chat.Id).FirstOrDefault();
-                          var removed=dbContext.ContactInfo.Remove(contactInfo);
+                        contactInfo= (TelegramBot.Models.ContactInfo)dbContext.tblContactInfo.Where(b => b.fldChatId == message.Chat.Id).FirstOrDefault();
+                          var removed=dbContext.tblContactInfo.Remove(contactInfo);
                           result =2;
                         break;
                         case MessageType.ChatMembersAdded:
                         contactInfo=new Models.ContactInfo(){
-                            ChatId  =message.Chat.Id,
-                            Title=message.Chat.Title
+                            fldChatId  =message.Chat.Id,
+                            // Title=message.Chat.Title
                         };
-                        dbContext.ContactInfo.Add(contactInfo);
+                        dbContext.tblContactInfo.Add(contactInfo);
                     
                             result =2;
                         break;
@@ -108,10 +115,10 @@ namespace TelegramBot.Services
         {
         using (var scope = scopeFactory.CreateScope())
             { 
-                TelegramBot.Models.ContactInfo contactInfo ;
+                TelegramBot.Models.ContactInfo? contactInfo ;
                 var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
-                contactInfo= (TelegramBot.Models.ContactInfo)dbContext.ContactInfo.Where(b => b.ChatId == message.Chat.Id).FirstOrDefault();
-                dbContext.ContactInfo.Remove(contactInfo);
+                contactInfo= dbContext.tblContactInfo.Where(b => b.fldChatId == message.Chat.Id).FirstOrDefault() as TelegramBot.Models.ContactInfo;
+                dbContext.tblContactInfo.Remove(contactInfo);
                 
                 dbContext.SaveChanges();
             }
@@ -125,10 +132,11 @@ namespace TelegramBot.Services
                 TelegramBot.Models.ContactInfo contactInfo ;
                 var dbContext = scope.ServiceProvider.GetRequiredService<TelegramBotContext>();
                 contactInfo=new Models.ContactInfo(){
-                    ChatId  =message.Chat.Id,
-                    Title=message.Chat.Title
+                    fldChatId  =message.Chat.Id,
+                    // Title=message.Chat.Title,
+                    fldChatType=TelegramBot.Models.ChatType.person
                 };
-                dbContext.ContactInfo.Add(contactInfo);
+                dbContext.tblContactInfo.Add(contactInfo);
                 dbContext.SaveChanges();
             }
 
@@ -145,6 +153,8 @@ namespace TelegramBot.Services
                 _logger.LogInformation($"The group was saved with id: {SaveMessage.Result}");
                 return;
             }
+
+        
             var action = message.Text.Split(' ').First() switch
             {
                 "/unsubscribe"   => Unsubscribe(_botClient, message),
@@ -158,8 +168,7 @@ namespace TelegramBot.Services
             };
             var sentMessage = await action;
             _logger.LogInformation($"The message was sent with id: {sentMessage.MessageId}");
-          
-          
+            
             // Send inline keyboard
             // You can process responses in BotOnCallbackQueryReceived handler
             static async Task<Message> SendInlineKeyboard(ITelegramBotClient bot, Message message)
@@ -305,4 +314,5 @@ namespace TelegramBot.Services
             return Task.CompletedTask;
         }
     }
+
 }
