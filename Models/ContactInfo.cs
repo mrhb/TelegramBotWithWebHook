@@ -5,7 +5,7 @@ namespace TelegramBot.Models
 {
     public class ContactInfo
     {
-        [Key]
+        [Key][DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long  fldChatId { get; set; }
         public ChatType fldChatType { get; set; }
         public ChatState fldChatState { get; set; }

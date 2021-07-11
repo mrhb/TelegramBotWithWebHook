@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using TelegramBot.DbAccess;
 
 namespace TelegramBot.Services
@@ -63,6 +66,7 @@ public class MessageScheduleService
                            mesId =Mes.fldid,
                            infoChatId=inf.fldChatId,
                            mes = Mes.fldMes,
+                           img =Mes.ImageData,
                            ChatId=inf.fldChatId
                            }
                    )
@@ -71,13 +75,25 @@ public class MessageScheduleService
                 {  
                     try
                     {
+            await _botClient.SendChatActionAsync(item.ChatId, ChatAction.UploadPhoto);
+
+ 
+            MemoryStream memStream = new MemoryStream(item.img);
+     
+     
+            await _botClient.SendPhotoAsync(chatId: item.ChatId,
+                                            photo: new InputOnlineFile(memStream, "image"),
+                                            caption:item.mes);
+
+
                     //  SendMessageToChatId( 851145561,"this is title:"+ title);
-                    await _botClient.SendTextMessageAsync(item.ChatId,"you subscribed:"+ item.mes);
+                    // await _botClient.SendTextMessageAsync(item.ChatId,"you subscribed:"+ item.mes);
                     var entity = dbContext.tblBotMessage.FirstOrDefault(botMes => botMes.fldid == item.mesId);
                     // Validate entity is not null
                     if (entity != null)
                         {
                             entity.fldOK =Models.OkState.sent;
+                            entity.fldSendTime=DateTime.Now;
                             dbContext.SaveChanges();
                         }
                     }
@@ -89,6 +105,7 @@ public class MessageScheduleService
                             {
                                 entity.fldOK =Models.OkState.hasError;
                                 entity.fldResponse=c.ToString();
+                                entity.fldSendTime=DateTime.Now;
                                 dbContext.SaveChanges();
                             }
                     }

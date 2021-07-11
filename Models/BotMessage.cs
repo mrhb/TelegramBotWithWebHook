@@ -16,6 +16,7 @@ namespace TelegramBot.Models
       	public string fldMobileNumberOrId{get;set;}// [fldMobileNumber] [varchar](50) NULL,
 	      [Column(TypeName = "varchar(1000)")]
       	public string fldMes{get;set;}	// [fldMes] [varchar](1000) NULL,
+
         public byte[] ImageData { get; set; }
 	      public OkState? fldOK { get; set; }// [fldOK] [smallint] NOT NULL,
         [Column(TypeName = "varchar(20)")]

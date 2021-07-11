@@ -56,14 +56,15 @@ namespace KosarRB_TelegramBot
             {
                 var connectionString = Configuration.GetConnectionString("TelegramBotContext");
 
-                if (Environment.IsDevelopment())
-                {
-                    options.UseSqlite(connectionString);
-                }
-                else
-                {
+                // if (Environment.IsDevelopment())
+                // {
+                //     options.UseSqlite(connectionString);
+                // }
+                // else
+                // {
+                //     options.UseSqlServer(connectionString);
+                // }
                     options.UseSqlServer(connectionString);
-                }
             });
         }
 

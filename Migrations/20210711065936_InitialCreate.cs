@@ -11,16 +11,16 @@ namespace KosarRB_Bot.Migrations
                 name: "tblBotMessage",
                 columns: table => new
                 {
-                    fldid = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    fldid = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     fldMobileNumberOrId = table.Column<string>(type: "varchar(50)", nullable: false),
                     fldMes = table.Column<string>(type: "varchar(1000)", nullable: false),
-                    ImageData = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    fldOK = table.Column<int>(type: "INTEGER", nullable: true),
+                    ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    fldOK = table.Column<int>(type: "int", nullable: true),
                     fldTime = table.Column<string>(type: "varchar(20)", nullable: false),
                     flddate = table.Column<string>(type: "varchar(50)", nullable: false),
-                    fldSendTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    fldResponse = table.Column<string>(type: "TEXT", nullable: true)
+                    fldSendTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    fldResponse = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -31,10 +31,9 @@ namespace KosarRB_Bot.Migrations
                 name: "tblContactInfo",
                 columns: table => new
                 {
-                    fldChatId = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    fldChatType = table.Column<int>(type: "INTEGER", nullable: false),
-                    fldChatState = table.Column<int>(type: "INTEGER", nullable: false),
+                    fldChatId = table.Column<long>(type: "bigint", nullable: false),
+                    fldChatType = table.Column<int>(type: "int", nullable: false),
+                    fldChatState = table.Column<int>(type: "int", nullable: false),
                     fldMobileNumberOrId = table.Column<string>(type: "varchar(50)", nullable: false)
                 },
                 constraints: table =>

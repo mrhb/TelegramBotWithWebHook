@@ -1,4 +1,5 @@
 -- SQLite
+
 INSERT INTO tblBotMessage
         (
             fldMobileNumberOrId
@@ -8,19 +9,13 @@ INSERT INTO tblBotMessage
             , flddate
             ,fldTime
         )
-     VALUES
-           ("KosarRB"
-           ,"salam ...."
-           ,""
+   SELECT '09151575793'
+           ,'Hello   ....'
+           ,ImageFile
            ,0
-           ,"1400/4/19"
-           ,"11:50")
-           , ("09151575793"
-           ,"By  ...."
-           ,""
-           ,0
-           ,"1400/4/19"
-           ,"11:50")
-GO 
+           ,'1400/4/20'
+           ,'11:50'
+           FROM OPENROWSET(BULK N'D:\tux.png', SINGLE_BLOB) AS ImageSource(ImageFile);
+
 SELECT fldid, fldMobileNumberOrId, fldMes, ImageData, fldOK, fldTime, flddate
 FROM tblBotMessage;
